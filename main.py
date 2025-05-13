@@ -30,14 +30,14 @@ socketio = SocketIO(
     app,
     cors_allowed_origins="*",
     async_mode='eventlet',
-    transports=['websocket'],  # Только WebSocket
+    transports=['websocket'],  
     logger=True,
     engineio_logger=True,
     ping_interval=15,
     ping_timeout=30,
     max_http_buffer_size=1e6,
     allow_upgrades=False,
-    message_queue='redis://localhost:6379/0'# Запрет смены транспортов
+    message_queue='redis://localhost:6379/0'
 )
 
 login_manager = LoginManager()
@@ -60,7 +60,6 @@ db = SQLAlchemy(app)
 
 
 def init_db():
-    # Rooms database
     conn = sqlite3.connect('rooms.sqlite')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS rooms
@@ -73,13 +72,13 @@ def init_db():
                  player1_current_problem INTEGER,
                  player2_current_problem INTEGER)''')
 
-    # Создаем 1000 комнат
+    
     c.execute('SELECT COUNT(*) FROM rooms')
     if c.fetchone()[0] < 1000:
         for i in range(1, 1001):
             c.execute('INSERT OR IGNORE INTO rooms (id, status) VALUES (?, "free")', (i,))
 
-    # Queue database остается без изменений
+    
     conn = sqlite3.connect('queue.sqlite')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS queue
@@ -92,7 +91,7 @@ init_db()
 
 r = redis.Redis(host='localhost', port=6379, db=0)
 r1 = redis.Redis(host='localhost', port=6379, db=1)
-# Модель для хранения сообщений
+
 class Message(db.Model):
     __tablename__ = 'messages'
     id = db.Column(db.Integer, primary_key=True)
@@ -103,8 +102,6 @@ class Message(db.Model):
 
     def __repr__(self):
         return f'<Message {self.id} from user {self.user_id}>'
-
-# Создание таблиц
 
 class User(UserMixin):
 
@@ -118,7 +115,6 @@ with app.app_context():
 def load_user(user_id):
     return User(user_id)
 
-# Системный промпт
 SYSTEM_PROMPTS = {
     "bookchr": {
         "role": "system",
@@ -147,14 +143,12 @@ questions_per_game = 5
 
 @socketio.on('connect')
 def handle_connect():
-    # Восстанавливаем сессию из куки
     session_id = request.cookies.get(app.config['SESSION_COOKIE_NAME'])
     if session_id:
-        # Создаем новую сессию на основе полученного ID
         session.new = True
         session.permanent = True
         session.sid = session_id
-    # Сохраняем ID подключения в Redis
+
     r.setex(f"socket:{request.sid}", 3600, 'connected')
     print(f"Client connected: {request.sid}")
 
@@ -168,7 +162,6 @@ def handle_disconnect():
         Message.query.filter_by(user_id=user_id, role='system').delete()
         db.session.commit()
 
-        # Удаляем из очереди матчмейкинга
         with r.pipeline() as pipe:
             pipe.lrem('matchmaking_queue', 0, player_id)
             pipe.execute()
@@ -634,7 +627,7 @@ def get_assistant_response(dialogue):
             temperature=0.7,
         )
 
-        print(f"API response: {response}")  # Логируем ответ
+        print(f"API response: {response}") 
 
         if not response.choices:
             return "API вернул пустой ответ."
