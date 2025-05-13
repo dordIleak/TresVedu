@@ -1,0 +1,453 @@
+{% extends 'base.html' %}
+
+{% block title %}TresVquess{% endblock %}
+
+{% block content %}
+<img id="id_up_bg_sloy" src="static/images/upbgsloy.jpg" width="100%" height="1000" style="position: fixed; z-index: 1;">
+
+<div class="container" id="game-container" style="position: relative; z-index: 2;">
+    <div class="row justify-content-center">
+        <div class="col">
+            <h1 class="text-center" style="padding-top: 20%; color: white; font-family:Arial;"><b>"МЕЖДУ СТРОК"</b></h1>
+            <h1 class="text-center" style="color: white; font-family:Arial;"><b>УГАДАЙ ПЕРСОНАЖА</b></h1>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-11 col-sm-10 col-md-8 col-lg-6">
+            <div class="d-flex justify-content-center gap-3 flex-wrap align-items-center">
+                <a class="btn btn-dark btn-lg flex-grow-1"
+                    href="/about"
+                    role="button"
+                    style="min-width: 140px; max-width: 240px; text-align: center;">
+                        Правила
+                    </a>
+
+                {% if current_user.is_authenticated %}
+            <div class="btn-group flex-grow-1" style="min-width: 140px; max-width: 240px;">
+                <a class="btn btn-dark btn-lg"
+                href="#"
+                id="play-button"
+                role="button"
+                style="width: 100%; text-align: center; text-indent: -1rem;">
+                    Играть!
+                 </a>
+                <button type="button"
+                        class="btn btn-lg btn-dark dropdown-toggle dropdown-toggle-split"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                        style="min-width: 40px;">
+                    <span class="visually-hidden">Переключатель выпадающего списка</span>
+                </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="#" id="pick-poet-btn">
+                                <i class="fa fa-book"></i>
+                                Поэты
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" id="pick-histor-btn">
+                                <i class="fa fa-newspaper-o"></i>
+                                Исторические личности
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" id="pick-book-char">
+                                <i class="fa fa-address-book"></i>
+                                Персонажи книг
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% else %}
+                    <a class="btn btn-dark btn-lg" href="/login" id="login-button" role="button">Войти</a>
+                {% endif %}
+            </div>
+
+            <div id="notification-area" style="margin-top: 10px; min-height: 40px; position: relative;">
+                <div id="character-notification" style="background: rgba(0,0,0,0.7); color: white; padding: 5px 15px; border-radius: 20px; margin: 0 auto; width: fit-content; opacity: 0; transform: translateY(10px); transition: all 0.5s ease; position: absolute; left: 50%; transform: translateX(-50%); visibility: hidden;">
+                    Выбран режим: <span id="character-type-text">Поэты</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="new-container" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 3; overflow: hidden;">
+
+    <div id="typing-indicator" style="position: fixed; bottom: 90px; left: 20px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 12px; display: none;">
+        Печатает...
+    </div>
+
+    <div id="messages" style="position: absolute; top: 120px; bottom: 80px; left: 0; right: 0; overflow-y: auto; padding: 10px; -webkit-overflow-scrolling: touch;"></div>
+
+
+    <form id="messageForm" style="position: fixed; bottom: 0; left: 0; right: 0; min-height: 80px; background-color: #656769; padding: 10px; border-top: 1px solid #444; z-index: 3;">
+    <div style="display: flex; gap: 8px; height: 100%; align-items: center;">
+        <textarea
+            id="messageInput"
+            style="flex: 1; padding: 8px; border-radius: 4px; border: none; background-color: #3e3f40; color: white; resize: none; min-height: 60px;"
+            placeholder="Введите сообщение..."
+            required
+        ></textarea>
+        <div style="display: flex; flex-direction: row; gap: 8px; height: 100%; align-items: center;">
+            <button
+                id="clear-chat-button"
+                style="height: 60px; width: 80px; padding: 0 5px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;"
+            >
+                Очистить
+            </button>
+            <button
+                type="submit"
+                style="height: 60px; width: 80px; padding: 0 5px; background-color: #4400ff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;"
+            >
+                Отправить
+            </button>
+        </div>
+    </div>
+    </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+<script>
+    let selectedCharacterType = 'poet';
+
+    function showCharacterNotification(type) {
+        const notification = document.getElementById('character-notification');
+        const typeText = document.getElementById('character-type-text');
+
+        // Сначала сбрасываем анимацию
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(-50%) translateY(10px)';
+        notification.style.visibility = 'hidden';
+
+        // Обновляем текст
+        typeText.textContent = type === 'poet' ? 'Поэты' :
+                      type === 'historical' ? 'Исторические личности' :
+                      'Персонажи книг';
+
+        // Даем время для сброса состояния
+        setTimeout(() => {
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(-50%) translateY(0)';
+            notification.style.visibility = 'visible';
+
+            // Прячем через 3 секунды
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(-50%) translateY(-10px)';
+                setTimeout(() => {
+                    notification.style.visibility = 'hidden';
+                }, 500); // Ждем завершения анимации
+            }, 3000);
+        }, 10);
+    }
+
+    // Обработчики выбора типа персонажа
+    document.getElementById('pick-poet-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        selectedCharacterType = 'poet';
+        showCharacterNotification('poet');
+        socket.emit('clear_chat');
+    });
+
+    document.getElementById('pick-histor-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        selectedCharacterType = 'historical';
+        showCharacterNotification('historical');
+        socket.emit('clear_chat');
+    });
+
+    document.getElementById('pick-book-char').addEventListener('click', function(e) {
+        e.preventDefault();
+        selectedCharacterType = 'bookchr';
+        showCharacterNotification('bookchr');
+        socket.emit('clear_chat');
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        const socket = io({
+            transports: ['websocket'],
+            upgrade: true,
+            rejectUnauthorized: false,
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000
+        });
+
+        document.getElementById('messageForm').onsubmit = function(e) {
+            e.preventDefault();
+            const messageInput = document.getElementById('messageInput');
+            const userMessage = messageInput.value.trim();
+
+            if (userMessage) {
+                document.getElementById('typing-indicator').style.display = 'block';
+                scrollToBottom();
+                const messagesDiv = document.getElementById('messages');
+                const userMessageElement = document.createElement('div');
+                userMessageElement.className = 'message user-message';
+                userMessageElement.textContent = `Вы: ${userMessage}`;
+                messagesDiv.appendChild(userMessageElement);
+
+                socket.emit('send_message', {
+                    message: userMessage,
+                    character_type: selectedCharacterType
+                });
+
+                messageInput.value = '';
+                scrollToBottom();
+            }
+        };
+
+        socket.on('receive_response', function(data) {
+            document.getElementById('typing-indicator').style.display = 'none';
+            const messagesDiv = document.getElementById('messages');
+            const serverMessageElement = document.createElement('div');
+            serverMessageElement.className = 'message server-message';
+            serverMessageElement.textContent = `Сервер: ${data.message}`;
+            messagesDiv.appendChild(serverMessageElement);
+            scrollToBottom();
+        });
+        socket.on('redirect', function(data) {
+            window.location.href = data.url;
+        });
+        socket.on('chat_cleared', function() {
+        // Можно добавить уведомление для пользователя
+            console.log("Chat history cleared");
+        });
+        document.getElementById('clear-chat-button').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('messages').innerHTML = '';
+        });
+
+        function scrollToBottom() {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    });
+
+    document.getElementById('play-button').addEventListener('click', function(event) {
+        event.preventDefault();
+        var container = document.getElementById('game-container');
+        container.classList.add('move-out');
+
+        setTimeout(function() {
+            container.style.display = 'none';
+            var newContainer = document.getElementById('new-container');
+            newContainer.style.display = 'block';
+
+            setTimeout(function() {
+                newContainer.classList.add('show');
+                newContainer.style.opacity = '1';
+            }, 10);
+        }, 500);
+    });
+    socket.on('typing_started', function() {
+        document.getElementById('typing-indicator').style.display = 'block';
+        scrollToBottom();
+    });
+</script>
+
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    min-height: 100vh;
+    background: url('static/images/zhelezobetonnye-plity.jpg') no-repeat center center fixed;
+    background-size: cover;
+    position: relative;
+  }
+  /* Универсальные стили */
+  .btn.btn-lg {
+    font-size: 1rem !important;
+    padding: 0.75rem 1.25rem !important;
+    white-space: nowrap !important;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+    .btn-group.flex-grow-1,
+a.btn.flex-grow-1 {
+    flex: 1 1 auto !important;
+    min-width: 140px !important;
+    max-width: 240px !important;
+}
+  .btn-group {
+    max-width: 200px;
+    flex: 1 1 auto;
+  }
+
+  #play-button {
+    padding-right: 2.5rem !important;
+    min-width: 120px;
+    flex-grow: 1;
+  }
+
+  .dropdown-menu {
+    background: #343a40 !important;
+    border: 1px solid #495057 !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
+    min-width: 240px !important;
+    width: 100% !important;
+    max-width: 300px !important;
+    margin-top: 8px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .dropdown-item {
+    background: #252a2e !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    padding: 12px 16px !important;
+    margin: 4px 0 !important;
+    transition: all 0.2s !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    font-size: 1rem !important;
+  }
+
+  .dropdown-item:hover {
+    background: #2c3034 !important;
+    transform: translateX(5px);
+  }
+
+  .dropdown-item i {
+    font-size: 1.2em !important;
+    width: 24px !important;
+    text-align: center;
+  }
+
+  .dropdown-toggle-split {
+    width: 40px !important;
+    border-left: 1px solid #495057 !important;
+  }
+
+  /* Адаптация для мобилок */
+  @media (max-width: 768px) {
+    .d-flex {
+      gap: 0.5rem !important;
+    }
+     .btn-group.flex-grow-1,
+    a.btn.flex-grow-1 {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: unset !important;
+    }
+    .btn-group .btn-lg {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+    .btn-group {
+      max-width: 100%;
+      width: 100% !important;
+    }
+
+    #play-button {
+      padding-right: 2rem !important;
+      min-width: unset;
+      font-size: 0.9rem !important;
+    }
+
+    .btn.btn-lg {
+      padding: 0.6rem 1rem !important;
+      font-size: 0.9rem !important;
+    }
+
+    .dropdown-menu {
+      max-width: calc(100vw - 20px) !important;
+      min-width: unset !important;
+    }
+  }
+
+
+  .message {
+    padding: 8px 12px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    position: relative;
+    word-wrap: break-word;
+    display: block;
+    clear: both;
+    width: fit-content;
+    max-width: 80%;
+  }
+
+  #typing-indicator {
+    animation: pulse 1.5s infinite;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-size: 0.9em;
+    color: #333;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+  }
+
+  .user-message {
+    margin-left: auto;
+    margin-right: 0;
+    background-color: rgba(68, 0, 255, 0.9);
+    color: white;
+    text-align: right;
+  }
+
+  .server-message {
+    margin-right: auto;
+    margin-left: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #333;
+    text-align: left;
+  }
+
+  #character-notification {
+    transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    will-change: opacity, transform;
+  }
+
+  #game-container {
+    transition: transform 0.5s ease;
+  }
+
+  .move-out {
+    transform: translateY(-100%);
+  }
+
+  #new-container {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .show {
+    display: block;
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    #messages {
+      top: 100px;
+      bottom: 100px;
+    }
+
+    h1 {
+      font-size: 1.5rem !important;
+      padding-top: 15% !important;
+    }
+
+    #messageForm {
+      padding: 10px;
+    }
+
+    .message {
+      max-width: 90%;
+    }
+  }
+</style>
+
+{% endblock %}

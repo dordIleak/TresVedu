@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}TresVlogin{% endblock %}
+{% block content %}
+<img id="id_up_bg_sloy" src="static/images/upbgsloy.jpg" width="100%" height="1000" style="position: fixed; z-index: -3;">
+  <div class="container">
+    <div class="row justify-content-center mt-5">
+      <div class="col-md-6">
+        <div class="card" style="background-color: #8c8886;">
+          <div class="card-header">
+            <h1 class="text-center">Войти в аккаунт</h1>
+          </div>
+          {% if error %}
+            <div style="color: red;">{{ error }}</div> <!-- Отображение сообщения об ошибке -->
+          {% endif %}
+          <div class="card-body">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="alert alert-danger">
+                  <ul>
+                    {% if messages[0] == "Please log in to access this page." %}
+                      <li>{{ messages[0] }}</li>
+                    {% endif %}
+                    {% if messages[0] != "Please log in to access this page." %}
+                    {% for message in messages %}
+                    <li>{{ message }}</li>
+                    {% endfor %}
+                    {% endif %}
+                  </ul>
+                </div>
+              {% endif %}
+            {% endwith %}
+            <form method="post">
+              <div class="mb-3">
+                <label for="login" class="form-label" style="color:white">Логин:</label>
+                <input type="text" class="form-control" id="login" name="login" required>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label" style="color:white">Пароль:</label>
+                <input type="text" class="form-control" id="password" name="password" required>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn btn-dark">Отправить</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row justify-content-center" >
+      <div class="col">
+        <h1 class="text-center" style="color: white;><b>">Еще нет аккаунта?</h1>
+      </div>
+    </div>
+    <div class="row justify-content-center" >
+        <div class="text-center">
+            <a class="btn btn-dark btn-lg" href="/registration" role="button">Создай!</a>
+        </div>
+    </div>
+  </div>
+<style>
+	body {
+    margin: 0;
+    overflow: hidden;
+    min-height: 100vh;
+    background: url('static/images/zhelezobetonnye-plity.jpg') no-repeat center center fixed;
+    background-size: cover;
+    position: relative;
+  }
+</style>
+{% endblock %}

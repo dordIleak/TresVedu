@@ -1,0 +1,273 @@
+body {
+  background-color: #ffffff;
+  color: #000000;
+}
+.nav-link {
+    color: aliceblue;
+  }
+  
+  .nav-link:hover {
+    color: #7780ff;
+  }
+.navbar {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.navbar-nav {
+    margin-right: 0 !important;
+}
+.button-zakaz-make {
+    padding: 20px 50px;
+    outline: none;
+    border: none;
+    border-radius: 5px;
+    
+}
+#messages {
+    padding-bottom: 20px; /* Дополнительный отступ снизу */
+}
+
+.message {
+    margin-bottom: 10px; /* Отступ между сообщениями */
+}
+#id_background {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: -2;
+  top: 50px;
+  bottom: 0;
+}
+
+#id_background_laser {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: -2;
+  top: 50px;
+  bottom: 0;
+}
+
+#id_up_bg_sloy {
+  position: absolute;
+  left: 0;
+  right:500;
+  top:0;
+  z-index: -1;
+  opacity: 0.6;
+}
+  #toggle {
+    display: none;
+  }
+  /* Когда чекбокс отмечен, картинка становится невидимой */
+  #toggle:checked + label + img {
+    opacity: 0; /* Картинка исчезает */
+  }
+
+#id_up_bg_sloy_laser {
+  position: absolute;
+  left: 0;
+  right:500;
+  top:0;
+  z-index: -1;
+  opacity: 0.6;
+}
+
+#id_up_background1 {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 550px;
+  bottom: 0;
+  z-index: -1;
+}
+
+#content_image_menu {
+	z-index:5;
+	position: relative;
+	width: 100%;
+	background: ("static/images/upbgsloy21.jpg");
+  }
+  #inner_wrap_images {
+	position: relative;
+	margin: 0;
+	width: 100%;
+	height: 100%;
+  }
+
+
+
+
+#id_content_image_5{
+  z-index: -1;
+}
+
+#id_content_image_8{
+  z-index: -1;
+  position: absolute;
+}
+
+#id_content_image_9{
+	z-index: -1;
+  }
+
+#id_content_image_7{
+	opacity: 1;
+	-webkit-transition: all 0.3s ease-in-out;
+  }
+  #id_content_image_7:hover{
+	opacity:0.3;
+  }
+
+#id_content_image_under{
+	z-index:-1
+}
+
+#list_1{
+  position: absolute;
+  left: 1100px;
+  top: 1300px;
+}
+
+.text-center{
+  color:white;
+}
+
+.container my-3{
+  position: relative;
+}
+.container my-5{
+  z-index: 5;
+}
+.text-center{
+  z-index: 5;
+}
+
+.text-center mb-4{
+  z-index: 5;
+}
+
+.navbar navbar-expand navbar-light bg-light {
+  position: sticky;
+  top:0;
+  z-index: 5;
+  background-color: rgb(238, 226, 216);
+  text-align: start;
+}
+.h2 {
+  color: white; 
+  text-shadow: rgb(0, 0, 0) 0 0 50px; 
+  -webkit-text-stroke: 1px #3a3838;
+}
+.qweqweqwe{
+  z-index: -1;
+}
+
+
+
+
+
+.cssSlider {
+	display: block;
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+}
+.cssSlider .slides {
+	overflow: hidden;
+	overflow: hidden;
+	width: 100%;
+	height: 70vmin;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.cssSlider .slides > li {
+	width: 100%;
+	height: 70vmin;
+	position: absolute;
+	z-index: 1;
+	overflow: hidden;
+}
+.cssSlider .slides > li > img {
+	width: 100%;
+	height: auto;
+}
+/*
+.cssSlider .slides > li:first-child:not(:target) {
+	z-index: 1;
+	-webkit-transform: translateY(0%);
+	        transform: translateY(0%);
+}
+*/
+.cssSlider .thumbnails {
+	display: block;
+	position: relative;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.cssSlider .thumbnails > li {
+	float: left;
+	width: 25%;
+}
+.cssSlider .thumbnails > li > a {
+	display: block;
+}
+.cssSlider .thumbnails > li > a > img {
+	width: 100%;
+	height: auto;
+}
+
+.cssSlider .slides li:target {
+	z-index: 3;
+	-webkit-animation: slide 1s 1;
+}
+.cssSlider .slides li:not(:target) {
+	-webkit-animation: hidden 1s 1;
+}
+@-webkit-keyframes slide {
+	0% {
+		-webkit-transform: translateX(-100%);
+		        transform: translateX(-100%);
+	}
+	100% {
+		-webkit-transform: translateX(0%);
+		        transform: translateX(0%);
+	}
+}
+@keyframes slide {
+	0% {
+		-webkit-transform: translateX(-100%);
+		        transform: translateX(-100%);
+	}
+	100% {
+		-webkit-transform: translateX(0%);
+		        transform: translateX(0%);
+	}
+}
+@-webkit-keyframes hidden {
+	0% {
+		z-index: 2;
+		-webkit-transform: translateX(0%);
+		        transform: translateX(0%);
+	}
+	100% {
+		z-index: 2;
+		-webkit-transform: translateX(100%);
+		        transform: translateX(100%);
+	}
+}
+@keyframes hidden {
+	0% {
+		z-index: 2;
+		-webkit-transform: translateX(0%);
+		        transform: translateX(0%);
+	}
+	100% {
+		z-index: 2;
+		-webkit-transform: translateX(100%);
+		        transform: translateX(100%);
+	}
+}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Готово!{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h1 class="text-center"  style="color: white; text-shadow: rgb(0, 0, 0) 0 0 50px; -webkit-text-stroke: 1px #3a3838;">Готово!</h1>
+        <div class="container">
+            <div class="row justify-content-center mt-5">
+              <div class="col-md-6">
+                <div class="card" style="background-color: #8c8886;">
+                    <div class="card-header">
+                        <h1 class="text-center">Ваш аккаунт создан!</h1>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <p>Используйте данные, которые вы указали для входа</p>
+                            <a class="btn btn-dark" href="/" role="button">Вернуться на главную</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}{% endblock %}</title>
+    <!-- Bootstrap стили -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Иконки fontawesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon">
+
+    <!-- Кастомные стили -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='custom.css') }}">
+    <style>
+        /* Дополнительные стили для мобильного меню */
+        .navbar-toggler {
+            border: none;
+            padding: 0.5rem;
+        }
+
+        .navbar-collapse {
+            background-color: #101010;
+            padding: 0 1rem;
+        }
+
+        @media (max-width: 767.98px) {
+            .navbar-nav {
+                padding-top: 1rem;
+            }
+
+            .nav-item {
+                margin-bottom: 0.5rem;
+            }
+
+            .nav-link {
+                padding: 0.5rem 0;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Навигация -->
+<nav class="navbar navbar-expand-md navbar-dark sticky-top" style="background-color: #101010;">
+    <div class="container-fluid">
+        <a href="/" rel="home" class="navbar-brand">
+            <img id="id_logo" src="static/images/logotipik.jpg" width="100" height="80" alt="Логотип">
+        </a>
+
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/help">Помочь</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/about">Правила</a>
+                </li>
+                <li class="nav-item">
+                    {% if current_user.is_authenticated %}
+                        <a class="nav-link" href="/profile">Профиль</a>
+                    {% else %}
+                        <a class="nav-link" href="/login">Логин</a>
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Контент дочерних шаблонов -->
+<div class="container my-3">
+    {% block content %}
+    {% endblock %}
+</div>
+
+<!-- Подключаем Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

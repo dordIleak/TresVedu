@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<img id="id_background" src="static/images/zhelezobetonnye-plity.jpg" width="1900" height="1144" style="position: fixed;">
+  <div class="container">
+    <div class="row justify-content-center mt-5">
+      <div class="col-md-6">
+        <div class="card" style="background-color: #8c8886;">
+          <div class="card-header">
+            <h1 class="text-center">Войти</h1>
+          </div>
+          <div class="card-body">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="alert alert-danger">
+                  <ul>
+                    {% for message in messages %}
+                      <li>{{ message }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+            {% endwith %}
+            <form method="post">
+              <div class="mb-3">
+                <label for="passw" class="form-label" style="color:white">Пароль админа:</label>
+                <input type="text" class="form-control" id="passw" name="passw" required>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn btn-dark">Отправить</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

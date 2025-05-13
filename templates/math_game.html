@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block title %}TresVquess{% endblock %}
+
+{% block content %}
+<img id="id_background" src="static/images/zhelezobetonnye-plity.jpg">
+<img id="id_background" src="{{ url_for('static', filename='images/zhelezobetonnye-plity.jpg') }}">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <!-- Отображение текущего счета -->
+            <div class="score-display mb-4">
+                <h3>Счет: <span id="playerScore">0</span> : <span id="opponentScore">0</span></h3>
+            </div>
+
+            <!-- Отображение задачи и прогресса -->
+            <div class="problem-container mb-4 p-4 bg-light rounded">
+                <h2 id="problemText" class="display-4 mb-4">Ожидаем начало игры...</h2>
+                <div class="progress mb-3">
+                    <div id="progressBar" class="progress-bar progress-bar-striped"
+                         role="progressbar" style="width: 0%"></div>
+                </div>
+                <p id="problemCounter" class="text-muted">Задача 0 из 0</p>
+            </div>
+
+            <!-- Поле ввода ответа -->
+            <div class="answer-input input-group mb-3">
+                <input type="number" id="answerInput" class="form-control form-control-lg"
+                       placeholder="Введите ответ" autofocus>
+                <button id="submitBtn" class="btn btn-dark btn-lg">Ответить</button>
+            </div>
+
+            <!-- Статус игры -->
+            <div id="gameStatus" class="alert alert-info"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const socket = io({
+    reconnection: true,
+    reconnectionAttempts: 3,
+    reconnectionDelay: 5000,
+    autoConnect: false
+});
+
+socket.on('connect_error', (error) => {
+    if(error.message === 'Invalid session') {
+        localStorage.removeItem('session_id');
+        window.location.reload();
+    }
+});
+
+function initSocket() {
+    socket.disconnect(); // Принудительный сброс предыдущего подключения
+    socket.connect();
+}
+
+// При загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    initSocket();
+    setTimeout(() => {
+        if(!socket.connected) {
+            window.location.href = '/session_error';
+        }
+    }, 5000);
+});
+
+// Heartbeat system
+setInterval(() => {
+    if (socket.connected) {
+        socket.emit('heartbeat');
+    }
+}, 15000);
+
+// Handle reconnection
+socket.on('reconnect', () => {
+    console.log('Reconnected to server');
+    if (window.location.pathname.includes('/waiting')) {
+        const playerId = sessionStorage.getItem('playerId') ||
+                        crypto.randomUUID();
+        socket.emit('join_queue', {player_id: playerId});
+    }
+});
+
+socket.on('connect', () => {
+    console.log('Connected to server');
+    if (currentRoom) {
+        // Rejoin room if reconnecting during game
+        socket.emit('rejoin_game', { room_id: currentRoom });
+    }
+});
+
+// Переподключение при ошибках
+socket.on('connect_error', () => {
+    setTimeout(() => socket.connect(), 2000);
+});
+
+// Очистка при выходе
+window.addEventListener('beforeunload', () => {
+    clearInterval(heartbeatInterval);
+    socket.disconnect();
+});
+
+        // Элементы интерфейса
+        const problemText = document.getElementById('problemText');
+        const progressBar = document.getElementById('progressBar');
+        const problemCounter = document.getElementById('problemCounter');
+        const answerInput = document.getElementById('answerInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const gameStatus = document.getElementById('gameStatus');
+        const playerScore = document.getElementById('playerScore');
+        const opponentScore = document.getElementById('opponentScore');
+
+        // Текущее состояние игры
+        let currentRoom = null;
+        let problemsTotal = 0;
+
+        // Обработчики событий Socket.IO
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            gameStatus.textContent = 'Подключено к серверу...';
+            const playerId = "{{ session.player_id }}";
+            socket.emit('join_queue', {player_id: playerId});
+        });
+
+        socket.on('game_start', (data) => {
+            console.log('Game started:', data);
+            currentRoom = data.room_id;
+            problemsTotal = data.total;
+
+    // Обновление интерфейса
+            problemText.textContent = data.problem;
+            problemCounter.textContent = `Задача 1 из ${problemsTotal}`;
+            progressBar.style.width = `${(1 / problemsTotal) * 100}%`;
+
+            // Присоединение к комнате
+            socket.emit('join_room', { room: currentRoom });
+        });
+
+
+        socket.on('next_problem', (data) => {
+            problemText.textContent = data.problem;
+            problemCounter.textContent = `Задача ${data.problem_num} из ${problemsTotal}`;
+            progressBar.style.width = `${(data.problem_num / problemsTotal) * 100}%`;
+            answerInput.value = '';
+            answerInput.focus();
+            gameStatus.textContent = '';
+        });
+
+        socket.on('update_scores', (data) => {
+            playerScore.textContent = data.your_score;
+            opponentScore.textContent = data.opponent_score;
+        });
+
+        socket.on('game_over', (data) => {
+            if (data.winner) {
+                gameStatus.textContent = data.winner === 'you'
+                    ? 'Вы победили!'
+                    : 'Вы проиграли!';
+                setTimeout(() => {
+                    window.location.href = data.winner === 'you'
+                        ? '/math_win'
+                        : '/math_lose';
+                }, 2000);
+            }
+        });
+
+        socket.on('opponent_disconnected', () => {
+            gameStatus.textContent = 'Соперник отключился. Вы победили!';
+            setTimeout(() => {
+                window.location.href = '/math_win';
+            }, 2000);
+        });
+
+        socket.on('error', (error) => {
+            gameStatus.textContent = `Ошибка: ${error.message}`;
+            console.error('Socket error:', error);
+        });
+
+        // Обработчик отправки ответа
+        submitBtn.addEventListener('click', submitAnswer);
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitAnswer();
+        });
+        socket.on('new_problem', (data) => {
+            problemText.textContent = data.problem;
+            problemCounter.textContent = `Задача ${data.problem_num} из ${problemsTotal}`;
+            progressBar.style.width = `${(data.problem_num / problemsTotal) * 100}%`;
+            answerInput.value = '';
+            answerInput.focus();
+        });
+        socket.on('game_result', (data) => {
+            if (data.winner) {
+                window.location.href = data.winner === socket.id
+                    ? '/math_win'
+                    : '/math_lose';
+            }
+        });
+        function submitAnswer() {
+            const answer = answerInput.value.trim();
+            if (answer && currentRoom) {
+                socket.emit('submit_answer', {
+                    answer: answer,
+                    room_id: currentRoom
+                });
+            }
+        }
+    });
+</script>
+
+<style>
+    .problem-container {
+        background-color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #problemText {
+        min-height: 80px;
+        font-weight: bold;
+    }
+
+    #answerInput {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+
+    #submitBtn {
+        min-width: 150px;
+    }
+</style>
+{% endblock %}
