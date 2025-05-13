@@ -94,8 +94,8 @@
     document.addEventListener("DOMContentLoaded", function() {
         const countElement = document.getElementById("colvo");
         let currentCount = parseInt(countElement.innerText);
-        const targetCount = currentCount + 1; // Увеличиваем на 1
-        const duration = 1000; // Длительность анимации в миллисекундах
+        const targetCount = currentCount + 1;
+        const duration = 1000; 
         const stepTime = Math.abs(Math.floor(duration / (targetCount - currentCount)));
 
         function animateCount() {
@@ -112,8 +112,8 @@
 
                 setTimeout(() => {
                     countElement.classList.remove('fade-in');
-                }, 500); // Удаляем класс после завершения анимации
-            }, 500); // Время, через которое удаляем старый элемент
+                }, 500); 
+            }, 500); 
         }
 
         animateCount();
