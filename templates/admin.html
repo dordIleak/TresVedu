@@ -12,7 +12,7 @@
             <h1 class="text-center">Ваш аккаунт</h1>
           </div>
           {% if error %}
-            <div style="color: red;">{{ error }}</div> <!-- Отображение сообщения об ошибке -->
+            <div style="color: red;">{{ error }}</div> 
           {% endif %}
           <div class="card-body">
             {% with messages = get_flashed_messages() %}
